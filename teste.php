@@ -2,33 +2,44 @@
 
 include_once "format.php";
 
-$servername = "localhost"; // Endereço do servidor (normalmente localhost se estiver executando localmente)
-$username = "root"; // Nome de usuário do banco de dados
-//$password = ""; // Senha do banco de dados
-$dbname = "test"; // Nome do banco de dados
+$servername = "localhost";
+$username = "root";
+//$password = ""; // Se você tiver uma senha, descomente esta linha e insira a senha
+$dbname = "test";
 
-try{
-    $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username);
+try {
+    $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username); //conecçao com o banco de dados
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    echo "Conexão bem sucedida!";
-} catch (PDOException $e){
-    echo "Erro na conexão: " .$e->getMessage();
+    echo "Conexão bem-sucedida!";
+} catch(PDOException $e) {
+    echo "Erro na conexão: " . $e->getMessage();
 }
 
-$insertData = array(
-    "NOME" => "Yuri",
-    "IDADE" => "35"
+// Dados para inserção
+$insertData = array (
+    "NOME" => "João",
+    "IDADE" => "38"
 );
 
-//inserir no banco
-$insertTable = "cadastro";
+// Montar e executar a consulta preparada
+$insertTable = "Cadastro";
 $sql = formatSql($insertData, $insertTable);
 
-try{
-    $conn->exec($sql);
-    echo "Dados inseridos com sucesso!";
-}catch(PDOException $e){
-    echo "Erro na inserção: " .$e->getMessage();
+try {
+    $stmt = $conn->prepare($sql);
+
+    // Verificar se o nome já existe antes de inserir
+    if (!nomeExiste($conn, $insertData["NOME"])) {
+        $stmt->execute(array_values($insertData));
+        echo "Dados inseridos com sucesso!";
+    } else {
+        echo "Nome já existe na tabela.";
+    }
+} catch(PDOException $e) {
+    echo "Erro na inserção: " . $e->getMessage();
 }
 
+// Fechar a conexão com o banco de dados
 $conn = null;
+
+?>
